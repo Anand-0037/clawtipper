@@ -1,65 +1,108 @@
-# Tether / DoraHacks — ClawTipper
+# ClawTipper
 
-**Autonomous economic agent:** turns merged GitHub work into **programmable USDT settlement** via **Tether WDK** on **Polygon** — with **rejections**, **budget guardrails**, and a **self-custodial** agent wallet.
+Autonomous agent that evaluates merged GitHub pull requests under explicit economic rules and settles tips in **USDT** on **Polygon** using **Tether WDK**. The agent wallet is **self-custodial**; policy limits (balances, per-tip caps, ROI thresholds, rejection paths) are enforced before any transfer.
 
-| | |
-| :--- | :--- |
-| **Why** | Cuts the **~90% friction** in rewarding OSS contributors: rules in code, payout on-chain, no manual invoicing. |
-| **Stack** | **Tether WDK**, **Gemini** (1.5 Flash by default), **Next.js 14**, **Polygon** USDT, optional **Telegram** control plane. |
-| **Security** | **Self-custodial** mnemonic; **min balance**, **max tip**, **daily % cap**, **ROI floor**, **trivial-change** hard gate. |
-| **Business** | Optional **platform fee** (e.g. **10%** per tip) → B2B / pool-funded incentives, not a one-off hack. |
+## Architecture
 
-### Proof of settlement (fill after golden TX)
+```mermaid
+flowchart TB
+  subgraph client["Presentation"]
+    WEB["Next.js 14 app"]
+    API_A["/api/activity"]
+    API_T["/api/txs"]
+  end
 
-Replace with your real explorer link before submit:
+  subgraph agent["Agent (Node.js)"]
+    ENTRY["index.js / auto-runner"]
+    GH["GitHub integration"]
+    EVAL["Gemini evaluation"]
+    POLICY["Budget and ROI guardrails"]
+    WDK["Tether WDK EVM wallet"]
+    LOG["Transaction log JSON"]
+    TG["Telegram control (optional)"]
+  end
+
+  subgraph external["External services"]
+    GITHUB["GitHub REST API"]
+    GEMINI["Google Gemini API"]
+    RPC["Polygon RPC"]
+    USDT["USDT (ERC-20)"]
+    INDEXER["WDK Indexer API (optional)"]
+    TELEGRAM["Telegram Bot API (optional)"]
+  end
+
+  WEB --> API_A
+  WEB --> API_T
+  API_A -.->|"ACTIVITY_SOURCE_URL or dev logs"| LOG
+  API_T --> INDEXER
+
+  ENTRY --> GH
+  ENTRY --> EVAL
+  ENTRY --> POLICY
+  ENTRY --> WDK
+  ENTRY --> LOG
+  ENTRY --> TG
+
+  GH --> GITHUB
+  EVAL --> GEMINI
+  WDK --> RPC
+  WDK --> USDT
+  TG --> TELEGRAM
+```
+
+## Overview
+
+| Area | Description |
+|------|-------------|
+| **Objective** | Encode reward policy in software and execute payouts on-chain without manual invoicing for each contribution. |
+| **Stack** | Tether WDK, Google Gemini (configurable model), Next.js 14, Polygon USDT; optional Telegram for operator notifications and controls. |
+| **Controls** | Self-custodial mnemonic; minimum balance, maximum tip, daily percentage cap, ROI floor, and hard gates for trivial or invalid inputs. |
+| **Commercial model** | Configurable platform fee on tips for pool-funded or B2B incentive programs. |
+
+## Proof of settlement
+
+After a successful live run, record the transaction here:
 
 `https://polygonscan.com/tx/<YOUR_TX_HASH>`
 
-*How to generate: fund agent wallet → PR with your `0x` in body → `npm run agent` (live) → capture hash.*
+Generate by funding the agent wallet, including a contributor `0x` address in the PR body, running the agent without `--dry-run`, and copying the returned hash from the console.
 
-**DoraHacks:** fill public URLs in [`SUBMISSION.md`](SUBMISSION.md) (repository + demo video only).
+## Repository layout
 
----
+| Path | Role |
+|------|------|
+| `clawtipper/` | Agent: GitHub fetch, LLM evaluation, WDK transfers, logging, optional Telegram and polling (`auto-runner`). |
+| `clawtipper-web/` | Web application: dashboard, activity feed, optional WDK Indexer-backed transaction view. |
 
-Monorepo layout:
-
-| Path | Description |
-|------|-------------|
-| `clawtipper/` | Node agent — GitHub, Gemini, Tether WDK, Telegram, auto-runner |
-| `clawtipper-web/` | Next.js 14 landing — marketing UI + optional `/api/activity` |
-| `SUBMISSION.md` | **Hackathon form copy** — judge-optimized descriptions + WDK survey hints |
-| `JUDGE_EXECUTION.md` | **2-hour execution plan** + **winning demo video script** |
-| `AGENTS.md` | **AI / contributor context** — WDK links, MCP, monorepo map |
-| `.cursor/mcp.json` | **WDK Docs MCP** — `https://docs.wallet.tether.io/~gitbook/mcp` |
-| `.cursor/rules/wdk.mdc` | **Cursor rules** for `@tetherto/*` conventions |
-
-### Agent
+## Agent
 
 ```bash
 cd clawtipper
-cp .env.example .env   # then edit secrets
+cp .env.example .env
 npm install
-npm run agent:dry      # or: node index.js "<PR_URL>" "0x..." --dry-run
-# Video / judge path (single PR, deterministic):
-# node index.js "https://github.com/you/repo/pull/1" "0xYour..." --dry-run
-# node index.js "https://github.com/you/repo/pull/1" "0xYour..."
+npm run agent:dry
+# Or single PR:
+# node index.js "<PR_URL>" "0x..." --dry-run
+# node index.js "<PR_URL>" "0x..."
 ```
 
-### Web
+## Web application
 
 ```bash
 cd clawtipper-web
-cp .env.example .env.local   # optional: NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_GITHUB_REPO
+cp .env.example .env.local
 npm install
-npm run dev                  # http://localhost:3000
+npm run dev
 ```
 
-Configure **`ACTIVITY_SOURCE_URL`** in Vercel (or `.env.local`) to a **public raw JSON** (e.g. Gist of `transactions.json`) so judges see the **Live system** badge and real rows. If unset, the site uses **demo + simulation** (still fine for narrative—say so in video).
+**Activity feed:** Set `ACTIVITY_SOURCE_URL` to a public URL returning the same shape as the agent transaction log JSON so production shows live rows. In development, the API can read `clawtipper/logs/transactions.json` when paths align.
 
-**WDK Indexer (optional, recommended):** In `clawtipper-web`, set **`WDK_INDEXER_API_KEY`** and **`AGENT_WALLET_ADDRESS`** (same Polygon `0x` as your agent). The site then loads **`/api/txs`** → real **USDT transfer history** for on-chain proof (hybrid with JSON logs, not a replacement for them). See `clawtipper-web/.env.example`.
+**Default behavior:** Omit `ALLOW_ACTIVITY_DEMO` in production. The activity API then serves real sources only (remote URL or logs). Set `ALLOW_ACTIVITY_DEMO=true` only for local demonstration with seeded data and client-side simulation.
 
-**Real-only UI (default):** do **not** set `ALLOW_ACTIVITY_DEMO` on Vercel. The API serves **only** hosted **`ACTIVITY_SOURCE_URL`** or local **`clawtipper/logs`** — **no** fake seed. For local demos with simulation, set **`ALLOW_ACTIVITY_DEMO=true`**. See **[`JUDGE_EXECUTION.md`](JUDGE_EXECUTION.md)**.
+**WDK Indexer (optional):** Set `WDK_INDEXER_API_KEY` and `AGENT_WALLET_ADDRESS` in `clawtipper-web` to populate `/api/txs` with outbound USDT activity for the agent address. See `clawtipper-web/.env.example`.
 
-**Golden tx (required for top tier):** fund wallet → run **`node index.js "<PR>" "0x..."`** (not only dry-run) → put Polygonscan link in README.
+## Operations notes
 
-**Before recording:** one agent process only (`pkill -f node` if Telegram **409**). Confirm `[GITHUB] Token check: Found` in the console.
+- Run a single agent process against Telegram to avoid session conflicts (e.g. HTTP 409).
+- Confirm GitHub API authentication before batch or demo runs (`GITHUB_TOKEN` / token check in logs).
+- Align `PROVIDER_URL` and `USDT_ADDRESS` with the same Polygon network (mainnet vs testnet).
