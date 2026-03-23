@@ -106,3 +106,12 @@ npm run dev
 - Run a single agent process against Telegram to avoid session conflicts (e.g. HTTP 409).
 - Confirm GitHub API authentication before batch or demo runs (`GITHUB_TOKEN` / token check in logs).
 - Align `PROVIDER_URL` and `USDT_ADDRESS` with the same Polygon network (mainnet vs testnet).
+- Transfers retry only on transport/RPC errors before a hash is returned, then the agent waits for a successful receipt (tunable via `WDK_TX_*` in `clawtipper/.env.example`).
+
+## Demonstration narrative
+
+**Three-line explanation:** Open source produces value without a standard way to settle rewards in money. ClawTipper is an agent that scores merged pull requests under explicit economic rules and pays USDT through Tether WDK on Polygon. Guardrails plus an auditable chain record make this programmable incentive design, not a simple notification bot.
+
+**If the network is slow:** As soon as the transaction is broadcast, the console prints the hash; open Polygonscan with that hash while the process finishes confirmation.
+
+**Closing line:** This is constrained capital allocation: policy encoded in software, execution settled on-chain, with treasury-style limits on every payout.
