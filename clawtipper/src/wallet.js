@@ -27,14 +27,14 @@ export function warnIfNetworkTokenMismatch() {
   const isMainnetUsdt = u === POLYGON_MAINNET_USDT;
   if (looksAmoy && isMainnetUsdt) {
     console.warn(
-      '\n[WDK] ⚠️  PROVIDER_URL looks like Polygon Amoy but USDT_ADDRESS is Polygon *mainnet* USDT.\n' +
+      '\n[WDK] PROVIDER_URL looks like Polygon Amoy but USDT_ADDRESS is Polygon mainnet USDT.\n' +
         '    Transfers/balances will fail. Use PROVIDER_URL=https://polygon.drpc.org (mainnet)\n' +
         '    or set USDT_ADDRESS to your Amoy test USDT contract.\n'
     );
   }
   if (looksMainnetPoly && !isMainnetUsdt && u.startsWith('0x')) {
     console.warn(
-      '\n[WDK] ⚠️  Mainnet Polygon RPC with non-standard USDT address — confirm USDT_ADDRESS matches this network.\n'
+      '\n[WDK] Mainnet Polygon RPC with non-standard USDT address — confirm USDT_ADDRESS matches this network.\n'
     );
   }
 }
@@ -86,21 +86,129 @@ export async function getUsdtBalanceFormatted() {
   return baseToUsdt(balance);
 }
 
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function intEnv(name, defaultVal) {
+  const v = process.env[name]?.trim();
+  if (v == null || v === '') return defaultVal;
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) && n > 0 ? n : defaultVal;
+}
+
 /**
- * Send USDT tip to recipient.
+ * True only for errors where retrying the *unsigned* transfer call is unlikely to double-pay
+ * (RPC/transport issues before a durable hash is returned).
+ * @param {unknown} err
+ */
+function isRetriableTransferSendError(err) {
+  const msg = (err && typeof err === 'object' && 'message' in err
+    ? String(err.message)
+    : String(err)
+  ).toLowerCase();
+  if (msg.includes('insufficient funds')) return false;
+  if (msg.includes('revert') || msg.includes('reverted')) return false;
+  if (msg.includes('user rejected') || msg.includes('user denied')) return false;
+  if (msg.includes('nonce too low') || msg.includes('replacement')) return false;
+  return (
+    msg.includes('timeout') ||
+    msg.includes('etimedout') ||
+    msg.includes('econnreset') ||
+    msg.includes('enotfound') ||
+    msg.includes('fetch failed') ||
+    msg.includes('network') ||
+    msg.includes('socket') ||
+    msg.includes('429') ||
+    msg.includes('502') ||
+    msg.includes('503') ||
+    msg.includes('504')
+  );
+}
+
+function receiptSucceeded(receipt) {
+  if (receipt == null) return false;
+  const s = receipt.status;
+  if (s === 1 || s === true) return true;
+  if (typeof s === 'bigint') return s === 1n;
+  if (typeof s === 'number') return s === 1;
+  return false;
+}
+
+/**
+ * Poll until receipt exists and status is success (or throw on revert / timeout).
+ * @param {{ getTransactionReceipt: (hash: string) => Promise<{ status?: number | bigint | boolean } | null> }} account
+ * @param {string} hash
+ */
+export async function waitForTransferConfirmation(account, hash, options = {}) {
+  const pollMs = options.pollMs ?? intEnv('WDK_TX_CONFIRM_POLL_MS', 3000);
+  const timeoutMs = options.timeoutMs ?? intEnv('WDK_TX_CONFIRM_TIMEOUT_MS', 120000);
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const receipt = await account.getTransactionReceipt(hash);
+    if (receipt) {
+      if (!receiptSucceeded(receipt)) {
+        throw new Error(`Transaction reverted on-chain: ${hash}`);
+      }
+      return receipt;
+    }
+    await sleep(pollMs);
+  }
+  throw new Error(
+    `Timeout waiting for confirmation (${timeoutMs}ms): ${hash}. Check the explorer; the tx may still confirm.`
+  );
+}
+
+/**
+ * Send USDT tip to recipient: retries only on transport/RPC errors before a hash is returned,
+ * then waits for on-chain success.
  * @param {string} toAddress - Recipient EVM address (0x...)
  * @param {number} amountUsdt - Amount in USDT (e.g. 1.5)
- * @returns {{ hash: string, fee: bigint }}
+ * @returns {Promise<{ hash: string, fee: bigint }>}
  */
-export async function sendTip(toAddress, amountUsdt) {
+export async function sendTip(toAddress, amountUsdt, options = {}) {
+  const maxRetries = options.maxRetries ?? intEnv('WDK_TX_MAX_RETRIES', 3);
+  const baseDelayMs = options.retryDelayMs ?? intEnv('WDK_TX_RETRY_DELAY_MS', 1500);
   const account = await getAccount();
   const amountBase = usdtToBase(amountUsdt);
-
-  const result = await account.transfer({
+  const transferOpts = {
     token: config.usdtAddress,
     to: toAddress,
     amount: amountBase,
-  });
+  };
+
+  let result;
+  let lastErr;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      result = await account.transfer(transferOpts);
+      break;
+    } catch (err) {
+      lastErr = err;
+      const retriable = attempt < maxRetries && isRetriableTransferSendError(err);
+      const msg = err && typeof err === 'object' && 'message' in err ? String(err.message) : String(err);
+      if (!retriable) {
+        throw new Error(`USDT transfer failed: ${msg}`);
+      }
+      const delay = baseDelayMs * 2 ** (attempt - 1);
+      console.warn(`[WDK] transfer send attempt ${attempt}/${maxRetries} failed (${msg.slice(0, 120)}) — retry in ${delay}ms`);
+      await sleep(delay);
+    }
+  }
+
+  if (!result) {
+    const m = lastErr && typeof lastErr === 'object' && 'message' in lastErr ? String(lastErr.message) : String(lastErr);
+    throw new Error(`USDT transfer failed after ${maxRetries} attempts: ${m}`);
+  }
+
+  try {
+    await waitForTransferConfirmation(account, result.hash, options);
+  } catch (confirmErr) {
+    const c = confirmErr && typeof confirmErr === 'object' && 'message' in confirmErr ? String(confirmErr.message) : String(confirmErr);
+    throw new Error(
+      `Tx broadcast (${result.hash}) but confirmation step failed: ${c} If the hash appears on Polygonscan, the transfer may still succeed.`
+    );
+  }
 
   return result;
 }
