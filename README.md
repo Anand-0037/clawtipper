@@ -95,11 +95,31 @@ npm install
 npm run dev
 ```
 
-**Activity feed:** Set `ACTIVITY_SOURCE_URL` to a public URL returning the same shape as the agent transaction log JSON so production shows live rows. In development, the API can read `clawtipper/logs/transactions.json` when paths align.
+## Deploy (Vercel + agent)
 
-**Default behavior:** Omit `ALLOW_ACTIVITY_DEMO` in production. The activity API then serves real sources only (remote URL or logs). Set `ALLOW_ACTIVITY_DEMO=true` only for local demonstration with seeded data and client-side simulation.
+### Next.js on Vercel
 
-**WDK Indexer (optional):** Set `WDK_INDEXER_API_KEY` and `AGENT_WALLET_ADDRESS` in `clawtipper-web` to populate `/api/txs` with outbound USDT activity for the agent address. See `clawtipper-web/.env.example`.
+1. Import the GitHub repo in [Vercel](https://vercel.com).
+2. **Root Directory:** `clawtipper-web` (monorepo).
+3. Framework: Next.js (auto). Build: `npm run build`, Output: default.
+4. **Environment variables** (Production and Preview as needed):
+
+   | Variable | Notes |
+   |----------|--------|
+   | `NEXT_PUBLIC_SITE_URL` | `https://<your-project>.vercel.app` (or custom domain). |
+   | `NEXT_PUBLIC_GITHUB_REPO` | Your public repo URL. |
+   | `ACTIVITY_SOURCE_URL` | **Required for live feed on Vercel** — HTTPS URL to raw `transactions.json` (e.g. Gist raw). Serverless has no access to `clawtipper/logs` on your laptop. |
+   | `WDK_INDEXER_API_KEY` | Optional; enables `/api/txs` on-chain card. |
+   | `AGENT_WALLET_ADDRESS` | Same `0x` as agent wallet (mnemonic account 0). |
+   | `ALLOW_ACTIVITY_DEMO` | Leave **unset** for judges (real-only). |
+
+5. Redeploy after changing env vars.
+
+### Agent (not Vercel)
+
+The tipping agent is a **Node** service (CLI, optional `auto-runner`, Telegram). Run it on **Render**, **Railway**, **Fly.io**, a VPS, or locally — with `clawtipper/.env`. Sync or publish `clawtipper/logs/transactions.json` to the same URL as `ACTIVITY_SOURCE_URL` so the Vercel site shows new tips.
+
+Omit `ALLOW_ACTIVITY_DEMO` in production (real-only API). See `clawtipper-web/.env.example` for all web env vars.
 
 ## Operations notes
 
