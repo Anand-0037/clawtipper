@@ -86,6 +86,16 @@ npm run agent:dry
 # node index.js "<PR_URL>" "0x..."
 ```
 
+## Telegram bot
+
+Every bot has a public link of the form **`https://t.me/<username>`**, where `<username>` is the handle @BotFather shows when you create the bot (no `@`). Example: if the bot is `@ClawTipperBot`, open **`https://t.me/ClawTipperBot`**.
+
+Configure the agent with **`TELEGRAM_BOT_TOKEN`** in `clawtipper/.env`. The bot is started by **`npm run agent`** (`auto-runner.js`), not by a one-off `node index.js` run.
+
+After the agent is running, open your `t.me/...` link, then use **`/start`** (subscribes your chat to push updates), **`/status`**, **`/wallet`**, **`/logs`**, **`/pause`**, **`/resume`**.
+
+**Your bot (edit this line in your fork):** `https://t.me/YOUR_BOT_USERNAME`
+
 ## Web application
 
 ```bash
