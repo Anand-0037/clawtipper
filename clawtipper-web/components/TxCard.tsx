@@ -18,7 +18,7 @@ export function TxCard() {
 
   const hasProof = hasIndexerTip || hasActivityTip;
 
-  /** No fake hash / explorer link unless demo mode is explicitly enabled. */
+  /** No placeholder hash unless preview mode is enabled on the server. */
   if (!hasProof && !allowClientSimulation) {
     return (
       <motion.div
@@ -32,8 +32,8 @@ export function TxCard() {
               On-chain proof
             </CardTitle>
             <p className="text-sm font-semibold text-slate-700">
-              No verified outbound USDT yet. After you run a real tip, this card
-              fills from your activity JSON or the WDK Indexer.
+              No verified outbound USDT yet. This card fills from your published
+              activity JSON or the WDK Indexer once the agent has sent a tip.
             </p>
           </CardHeader>
           <CardContent className="space-y-3 text-sm font-medium text-slate-800">
@@ -48,9 +48,9 @@ export function TxCard() {
               </li>
             </ul>
             <p className="rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-xs font-bold text-slate-900">
-              Local marketing only: set{" "}
-              <code className="font-mono">ALLOW_ACTIVITY_DEMO=true</code> to show
-              a placeholder tx in this card.
+              Optional: enable the preview flag documented in{" "}
+              <code className="font-mono">.env.example</code> to show a
+              non-production placeholder hash.
             </p>
           </CardContent>
         </Card>
@@ -152,7 +152,7 @@ export function TxCard() {
               </span>
             ) : (
               <span className="rounded-full border border-amber-500 bg-amber-50 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-amber-950">
-                Illustration (demo opt-in)
+                Sample · preview only
               </span>
             )}
           </div>
@@ -161,8 +161,8 @@ export function TxCard() {
               No indexer row yet — set{" "}
               <code className="rounded bg-amber-200 px-1">AGENT_WALLET_ADDRESS</code>{" "}
               + <code className="rounded bg-amber-200 px-1">WDK_INDEXER_API_KEY</code>{" "}
-              for on-chain proof, or use activity feed (
-              {source === "remote" ? "remote JSON" : "log / demo"}).
+              for on-chain proof, or use the activity feed (
+              {source === "remote" ? "remote JSON" : "hosted log"}).
             </p>
           )}
           <div className="rounded-lg border-2 border-slate-300 bg-slate-100 p-4 font-mono text-sm">
@@ -196,10 +196,10 @@ export function TxCard() {
           </a>
           <p className="text-sm font-medium leading-relaxed text-slate-800">
             {verifiedByIndexer
-              ? "Latest outbound USDT from the agent wallet, read from the Tether WDK Indexer API (not mock)."
+              ? "Latest outbound USDT from the agent wallet via the Tether WDK Indexer API."
               : hasActivityTip
                 ? "Latest successful tip from merged activity feed."
-                : "Placeholder hash for local UI only — not a real transaction."}
+                : "Sample hash for UI preview — not a live transaction."}
           </p>
         </CardContent>
       </Card>

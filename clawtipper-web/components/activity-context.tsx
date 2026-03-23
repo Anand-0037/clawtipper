@@ -94,7 +94,7 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
           feedTruth:
             raw.feedTruth ??
             (raw.source === "remote" ? "live" : "simulation"),
-          /** API must send `true` to opt in; missing/undefined = off (judge-safe). */
+          /** API must send `true` to opt in; missing/undefined = off. */
           allowClientSimulation: raw.allowClientSimulation === true,
         };
         setApiPayload(json);

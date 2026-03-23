@@ -32,8 +32,8 @@ export function StatsStrip() {
     feedTruth === "live"
       ? { text: "Stats from live activity feed", cls: "bg-emerald-200 text-emerald-950" }
       : source === "demo"
-        ? { text: "Demo mode — stats mix demo + sim", cls: "bg-amber-200 text-amber-950" }
-        : { text: "No live URL — demo / simulation", cls: "bg-slate-300 text-slate-900" };
+        ? { text: "Sample data · preview mode", cls: "bg-amber-200 text-amber-950" }
+        : { text: "Activity backend not connected", cls: "bg-slate-300 text-slate-900" };
 
   return (
     <motion.div
@@ -64,8 +64,8 @@ export function StatsStrip() {
         </span>
         <span className="text-center text-xs font-medium text-slate-700 sm:text-left">
           {feedTruth === "live"
-            ? "Live feed: stats from real rows only (no fake ticker)"
-            : "Demo: stats merge API + jitter simulation (~2–4s)"}
+            ? "Stats reflect published agent logs only."
+            : "Figures update once ACTIVITY_SOURCE_URL points at your agent’s JSON export."}
         </span>
       </div>
     </motion.div>

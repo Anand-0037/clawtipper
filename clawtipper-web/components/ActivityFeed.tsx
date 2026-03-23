@@ -69,7 +69,7 @@ export function ActivityFeed() {
           </span>
         ) : (
           <span className="inline-flex items-center rounded-full border-2 border-amber-500 bg-amber-50 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-amber-950">
-            Demo mode · simulation
+            Activity backend offline
           </span>
         )}
         {indexer.configured && indexer.items.length > 0 && (
@@ -80,8 +80,8 @@ export function ActivityFeed() {
         <span className="max-w-xl font-mono text-xs font-medium leading-snug text-slate-700">
           Newest first · max 10 ·{" "}
           {feedTruth === "live"
-            ? "rows from ACTIVITY_SOURCE_URL or agent logs (no auto fake feed)"
-            : "demo seed + timed simulation (set URL for live)"}
+            ? "rows from ACTIVITY_SOURCE_URL or linked agent logs"
+            : "connect ACTIVITY_SOURCE_URL when the agent export is hosted"}
         </span>
       </div>
 
@@ -89,7 +89,8 @@ export function ActivityFeed() {
         <div className="rounded-xl border-2 border-dashed border-slate-400 bg-white p-8 text-center shadow-inner">
           {allowClientSimulation === false ? (
             <p className="text-base font-semibold leading-relaxed text-slate-900">
-              <strong className="text-amber-900">No synthetic feed.</strong> Host{" "}
+              <strong className="text-amber-900">Activity feed not wired to this deployment.</strong>{" "}
+              When your agent backend is live, publish{" "}
               <code className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-sm">
                 transactions.json
               </code>{" "}
@@ -97,19 +98,17 @@ export function ActivityFeed() {
               <code className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-sm">
                 ACTIVITY_SOURCE_URL
               </code>{" "}
-              (Vercel env). Demo seed and client simulation are{" "}
-              <strong>disabled</strong> when{" "}
-              <code className="font-mono text-sm">ALLOW_ACTIVITY_DEMO</code>{" "}
-              unset (default).
+              in hosting (e.g. Vercel) environment variables.
             </p>
           ) : (
             <p className="text-base font-medium leading-relaxed text-slate-800">
-              Waiting for feed rows. Set{" "}
+              Set{" "}
               <code className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-sm font-bold text-slate-900">
                 ACTIVITY_SOURCE_URL
               </code>{" "}
               or use{" "}
-              <strong className="text-slate-950">Run live demo</strong>.
+              <strong className="text-slate-950">Preview activity</strong> for
+              sample rows only.
             </p>
           )}
         </div>
@@ -156,7 +155,7 @@ export function ActivityFeed() {
                           </span>
                           {item.simulated && (
                             <span className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-xs font-bold text-slate-800">
-                              sim
+                              preview
                             </span>
                           )}
                         </div>

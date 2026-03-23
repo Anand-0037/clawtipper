@@ -45,7 +45,7 @@ export function Terminal() {
     queue: [] as string[],
   });
 
-  /** No infinite canned script when feed is live OR judge/strict mode kills client simulation. */
+  /** No scripted loop when live feed is connected or client preview is disabled. */
   const suppressFakeLoop =
     feedTruth === "live" || allowClientSimulation === false;
   const rerender = useCallback(() => setTick((t) => t + 1), []);
@@ -161,7 +161,7 @@ export function Terminal() {
         )}
         {allowClientSimulation === false && feedTruth !== "live" && (
           <span className="ml-auto rounded border border-slate-500/80 bg-slate-800/80 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-slate-200">
-            Real-only · no canned loop
+            Sample output · backend not connected
           </span>
         )}
       </div>
@@ -187,7 +187,7 @@ export function Terminal() {
         onClick={hardReset}
         className="absolute bottom-3 right-3 rounded-md border border-slate-600 bg-slate-800 px-2.5 py-1 font-mono text-xs font-medium text-slate-200 transition hover:border-emerald-500 hover:text-white"
       >
-        replay
+        Replay sample
       </button>
     </motion.div>
   );

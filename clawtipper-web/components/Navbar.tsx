@@ -47,7 +47,7 @@ export function Navbar() {
               ) : (
                 <Play className="h-4 w-4" />
               )}
-              Run live demo
+              Preview activity
             </Button>
           )}
         </nav>

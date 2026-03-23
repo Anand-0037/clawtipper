@@ -27,7 +27,7 @@ export function ClawtipperLanding() {
         <div className="pointer-events-none fixed inset-x-0 top-16 z-[60] flex justify-center px-4">
           <div className="flex items-center gap-2 rounded-full border-2 border-emerald-600 bg-white px-4 py-2.5 font-mono text-sm font-bold text-emerald-950 shadow-xl">
             <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-600" />
-            Initializing agent…
+            Loading preview…
           </div>
         </div>
       )}
@@ -67,15 +67,15 @@ export function ClawtipperLanding() {
                     ) : (
                       <Play className="h-4 w-4" />
                     )}
-                    Run live demo
+                    Preview activity
                   </Button>
                 ) : (
                   <p className="max-w-md rounded-lg border-2 border-slate-400 bg-slate-100 px-4 py-3 text-sm font-bold text-slate-900">
-                    Real-only mode: set{" "}
-                    <code className="font-mono">ACTIVITY_SOURCE_URL</code> to raw{" "}
-                    <code className="font-mono">transactions.json</code>. For fake
-                    feed + simulation (local only), set{" "}
-                    <code className="font-mono">ALLOW_ACTIVITY_DEMO=true</code>.
+                    The public site is not yet connected to a hosted agent log.
+                    When your backend is deployed, set{" "}
+                    <code className="font-mono">ACTIVITY_SOURCE_URL</code> to your
+                    public{" "}
+                    <code className="font-mono">transactions.json</code> URL.
                   </p>
                 )}
                 <Button variant="outline" size="lg" asChild>
@@ -159,7 +159,7 @@ export function ClawtipperLanding() {
               >
                 GitHub
               </a>
-              <span className="text-slate-600">Demo video</span>
+              <span className="text-slate-600">Video</span>
               <span className="text-slate-600">Docs</span>
             </div>
           </div>

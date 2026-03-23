@@ -111,7 +111,7 @@ npm run dev
    | `ACTIVITY_SOURCE_URL` | **Required for live feed on Vercel** — HTTPS URL to raw `transactions.json` (e.g. Gist raw). Serverless has no access to `clawtipper/logs` on your laptop. |
    | `WDK_INDEXER_API_KEY` | Optional; enables `/api/txs` on-chain card. |
    | `AGENT_WALLET_ADDRESS` | Same `0x` as agent wallet (mnemonic account 0). |
-   | `ALLOW_ACTIVITY_DEMO` | Leave **unset** for judges (real-only). |
+   | `ALLOW_ACTIVITY_DEMO` | Leave **unset** in production; optional local preview only. |
 
 5. Redeploy after changing env vars.
 
@@ -119,12 +119,12 @@ npm run dev
 
 The tipping agent is a **Node** service (CLI, optional `auto-runner`, Telegram). Run it on **Render**, **Railway**, **Fly.io**, a VPS, or locally — with `clawtipper/.env`. Sync or publish `clawtipper/logs/transactions.json` to the same URL as `ACTIVITY_SOURCE_URL` so the Vercel site shows new tips.
 
-Omit `ALLOW_ACTIVITY_DEMO` in production (real-only API). See `clawtipper-web/.env.example` for all web env vars.
+Omit `ALLOW_ACTIVITY_DEMO` in production. See `clawtipper-web/.env.example` for web env vars.
 
 ## Operations notes
 
 - Run a single agent process against Telegram to avoid session conflicts (e.g. HTTP 409).
-- Confirm GitHub API authentication before batch or demo runs (`GITHUB_TOKEN` / token check in logs).
+- Confirm GitHub API authentication before batch runs (`GITHUB_TOKEN` / token check in logs).
 - Align `PROVIDER_URL` and `USDT_ADDRESS` with the same Polygon network (mainnet vs testnet).
 - Transfers retry only on transport/RPC errors before a hash is returned, then the agent waits for a successful receipt (tunable via `WDK_TX_*` in `clawtipper/.env.example`).
 

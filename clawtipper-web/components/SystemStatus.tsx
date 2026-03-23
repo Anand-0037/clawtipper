@@ -6,30 +6,30 @@ export function SystemStatus() {
   const { loading, source, stats, feedTruth } = useActivity();
 
   const remoteOk = !loading && source === "remote";
-  const demo = !loading && source === "demo";
+  const sample = !loading && source === "demo";
   const empty = !loading && source === "empty";
 
   const label = loading
     ? "Syncing feed…"
     : feedTruth === "live"
-      ? "Live rows · no fake ticker"
+      ? "Live activity feed"
       : remoteOk
         ? "Remote JSON"
-        : demo
-          ? "Demo mode · simulation ticker on"
+        : sample
+          ? "Sample data · preview"
           : empty
-            ? "Waiting for data"
+            ? "Activity API not connected"
             : "Connecting…";
 
   const color =
-    remoteOk ? "text-emerald-700" : demo ? "text-amber-700" : "text-amber-800";
+    remoteOk ? "text-emerald-700" : sample ? "text-amber-700" : "text-amber-800";
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       {remoteOk && (
         <span
           className="inline-flex items-center rounded-full border-2 border-emerald-600 bg-emerald-50 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-emerald-900 shadow-sm"
-          title="ACTIVITY_SOURCE_URL returned data — judges see real agent log rows"
+          title="ACTIVITY_SOURCE_URL returned agent log data"
         >
           Live system
         </span>

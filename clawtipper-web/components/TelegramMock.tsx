@@ -30,8 +30,8 @@ export function TelegramMock() {
           </CardTitle>
           <p className="text-center text-xs font-semibold text-slate-700">
             {allowClientSimulation
-              ? "UI preview — mirrors page simulation + “Run live demo”"
-              : "UI preview only — real Telegram is a separate process (skip in judge video if not wired)"}
+              ? "Layout preview — messages appear when you use Preview activity"
+              : "Layout preview — connect the Node agent with TELEGRAM_BOT_TOKEN for live messages"}
           </p>
         </CardHeader>
         <CardContent className="bg-white p-0">
@@ -46,14 +46,13 @@ export function TelegramMock() {
               <p className="text-center text-sm font-medium leading-relaxed text-slate-800">
                 {allowClientSimulation ? (
                   <>
-                    Waiting for events… click{" "}
-                    <strong className="text-slate-950">Run live demo</strong>
+                    Waiting for events… use{" "}
+                    <strong className="text-slate-950">Preview activity</strong>
                   </>
                 ) : (
                   <>
-                    No simulated stream. Show{" "}
-                    <strong className="text-slate-950">real bot</strong> in
-                    terminal or skip this panel.
+                    No live stream here — run the Telegram bot from the agent
+                    process to see real notifications.
                   </>
                 )}
               </p>

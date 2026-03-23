@@ -44,8 +44,8 @@ export type ActivityPayload = {
   stats: ActivityStats;
   latestTip: LatestTip;
   /**
-   * When `false` (STRICT_REAL_FEED on server): no client simulation ticker, no “Run live demo”.
-   * Omit or `true` for local/hackathon dev with mock + simulation.
+   * When `false` on server: no client preview ticker or preview CTA.
+   * `true` enables optional sample rows + Preview activity (local / staging).
    */
   allowClientSimulation?: boolean;
 };

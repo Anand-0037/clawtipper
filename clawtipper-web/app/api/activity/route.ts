@@ -16,10 +16,8 @@ function delay(ms: number) {
 }
 
 /**
- * Fake seed + client simulation are OPT-IN only.
- * Set `ALLOW_ACTIVITY_DEMO=true` for local marketing builds.
- * Legacy: `STRICT_REAL_FEED=false` also enables demo fallback.
- * Default (nothing set): real-only — empty or remote JSON / local logs.
+ * Optional sample payload + client preview: ALLOW_ACTIVITY_DEMO=true
+ * Legacy: STRICT_REAL_FEED=false enables the same. Default: empty or remote JSON / local logs only.
  */
 function isDemoFallbackEnabled(): boolean {
   const legacyStrict = process.env.STRICT_REAL_FEED?.trim().toLowerCase();
