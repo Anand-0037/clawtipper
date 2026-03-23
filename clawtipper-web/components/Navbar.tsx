@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Github, Play, Hexagon, Loader2 } from "lucide-react";
+import { Github, Play, Loader2 } from "lucide-react";
 import { useActivity } from "@/components/activity-context";
 
 const GITHUB_URL =
@@ -18,8 +19,14 @@ export function Navbar() {
           href="/"
           className="flex items-center gap-2 text-lg font-bold tracking-tight text-slate-950"
         >
-          <Hexagon className="h-6 w-6 shrink-0 text-emerald-700" aria-hidden />
-          <span>ClawTipper</span>
+          <Image
+            src="/clawtipper.png"
+            alt="ClawTipper"
+            width={1024}
+            height={1024}
+            priority
+            className="h-9 w-auto max-w-[148px] shrink-0 object-contain object-left sm:h-10 sm:max-w-[168px]"
+          />
         </Link>
         <nav className="flex items-center gap-2 sm:gap-3">
           <Button variant="ghost" size="sm" className="hidden font-semibold sm:inline-flex" asChild>
