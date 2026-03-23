@@ -1,0 +1,32 @@
+# Local-only hackathon notes (pitch scripts, playbooks, internal checklists)
+/hack/
+
+# Secrets & local env (keep example envs)
+.env
+.env.*
+!clawtipper/.env.example
+!clawtipper-web/.env.example
+
+# Dependencies & build output
+node_modules/
+**/.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Logs & runtime
+*.log
+logs/
+clawtipper/logs/
+
+# OS / editor
+.DS_Store
+.cursor/
+
+# Large / local-only dumps
+digest.txt
+
+# Markdown: only the repo-root README (not SUBMISSION.md, package READMEs, etc.)
+*.md
+!/README.md

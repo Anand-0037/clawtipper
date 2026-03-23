@@ -1,0 +1,27 @@
+{
+  "name": "clawtipper",
+  "version": "1.0.0",
+  "description": "Autonomous AI tipping bot for GitHub OSS contributors - USDT via Tether WDK",
+  "main": "index.js",
+  "bin": "./index.js",
+  "scripts": {
+    "start": "node index.js",
+    "tip": "node index.js",
+    "agent": "node auto-runner.js",
+    "agent:dry": "node auto-runner.js --dry-run",
+    "dry-run": "node index.js",
+    "generate-mnemonic": "node scripts/generate-mnemonic.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@tetherto/wdk": "^1.0.0-beta.6",
+    "@tetherto/wdk-wallet-evm": "^1.0.0-beta.10",
+    "axios": "^1.13.6",
+    "dotenv": "^17.3.1",
+    "node-telegram-bot-api": "^0.67.0"
+  }
+}
